@@ -19,6 +19,8 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Cursor> 
         const val PERMISSIONS_REQUEST_READ_CONTACTS = 100
     }
 
+    private var isFirstTimeLoaded = false
+
     private val mColumnProjection: Array<String> = arrayOf(
         if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)) {
             ContactsContract.Contacts.DISPLAY_NAME_PRIMARY
@@ -37,7 +39,12 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Cursor> 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         btContacts.setOnClickListener {
-            LoaderManager.getInstance(this).initLoader(1, null, this)
+            if (isFirstTimeLoaded) {
+                LoaderManager.getInstance(this).restartLoader(1, null, this)
+            } else {
+                LoaderManager.getInstance(this).initLoader(1, null, this)
+                isFirstTimeLoaded = true
+            }
         }
     }
 
@@ -48,9 +55,7 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Cursor> 
                     arrayOf(Manifest.permission.READ_CONTACTS),
                     PERMISSIONS_REQUEST_READ_CONTACTS
                 )
-                btContacts.visibility = View.GONE
             } else {
-                btContacts.visibility = View.GONE
                 return CursorLoader(
                     this,
                     ContactsContract.Contacts.CONTENT_URI,
